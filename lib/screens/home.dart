@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:note_app/constants/colors.dart';
 import 'package:note_app/models/note.dart';
+import 'package:note_app/screens/edit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -77,7 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 IconButton(
                     onPressed: () {
-                      filteredNotes = sortNotesByModifiedTime(filteredNotes);
+                      setState(() {
+                        filteredNotes = sortNotesByModifiedTime(filteredNotes);
+                      });
                     },
                     padding: const EdgeInsets.all(0),
                     icon: Container(
@@ -131,6 +134,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: ListTile(
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) => EditScreen(
+                              note: filteredNotes[index],
+                            ),
+                          ),
+                        );
+                        if (result != null) {
+                          setState(() {
+                            int originalIndex =
+                                sampleNotes.indexOf(filteredNotes[index]);
+                            sampleNotes[originalIndex] = Note(
+                                id: sampleNotes[originalIndex].id,
+                                title: result[0],
+                                content: result[1],
+                                modifiedTime: DateTime.now());
+                            filteredNotes[index] = Note(
+                                id: filteredNotes[index].id,
+                                title: result[0],
+                                content: result[1],
+                                modifiedTime: DateTime.now());
+                          });
+                        }
+                      },
                       title: RichText(
                         overflow: TextOverflow.ellipsis,
                         maxLines: 3,
@@ -182,7 +211,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (BuildContext context) => const EditScreen(),
+            ),
+          );
+          if (result != null) {
+            setState(() {
+              sampleNotes.add(Note(
+                  id: sampleNotes.length,
+                  title: result[0],
+                  content: result[1],
+                  modifiedTime: DateTime.now()));
+              filteredNotes = sampleNotes;
+            });
+          }
+        },
         elevation: 10,
         backgroundColor: Colors.grey.shade800,
         child: const Icon(
